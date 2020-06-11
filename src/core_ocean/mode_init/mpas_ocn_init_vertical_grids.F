@@ -1212,7 +1212,7 @@ contains
 
           ! Fill bathymetry holes, i.e. single cells that are deeper than all neighbors.
           ! These cells can collect tracer extrema and are not able to use
-          ! horizontal diffusion or advection to clear them out. Reduce pits to
+          ! vertical diffusion or advection to clear them out. Reduce pits to
           ! make them level with the next deepest neighbor cell.
 
           maxLevelCell(nCells+1) = -1

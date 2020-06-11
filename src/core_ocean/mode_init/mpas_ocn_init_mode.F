@@ -39,7 +39,8 @@ module ocn_init_mode
    use ocn_config
 
    use ocn_init_spherical_utils
-   use ocn_init_cosine_bell
+   use ocn_init_horizontal_cosine_bell
+   use ocn_init_vertical_cosine_bell
    !use ocn_init_TEMPLATE
    use ocn_init_baroclinic_channel
    use ocn_init_lock_exchange
@@ -290,7 +291,8 @@ module ocn_init_mode
       call ocn_init_setup_isomip_plus(domain, ierr)
       call ocn_init_setup_hurricane(domain, ierr)
       call ocn_init_setup_tidal_boundary(domain, ierr)
-      call ocn_init_setup_cosine_bell(domain, ierr)
+      call ocn_init_setup_horizontal_cosine_bell(domain, ierr)
+      call ocn_init_setup_vertical_cosine_bell(domain, ierr)
       !call ocn_init_setup_TEMPLATE(domain, ierr)
 
       call mpas_log_write( ' Completed setup of: ' // trim(config_init_configuration))
@@ -400,7 +402,9 @@ module ocn_init_mode
       iErr = ior(iErr, err_tmp)
       call ocn_init_validate_tidal_boundary(configPool, packagePool, iocontext, iErr=err_tmp)
       iErr = ior(iErr, err_tmp)
-      call ocn_init_validate_cosine_bell(configPool, packagePool, iocontext, iErr=err_tmp)
+      call ocn_init_validate_horizontal_cosine_bell(configPool, packagePool, iocontext, iErr=err_tmp)
+      iErr = ior(iErr, err_tmp)
+      call ocn_init_validate_vertical_cosine_bell(configPool, packagePool, iocontext, iErr=err_tmp)
       iErr = ior(iErr, err_tmp)
       ! call ocn_init_validate_TEMPLATE(configPool, packagePool, iocontext, iErr=err_tmp)
       ! iErr = ior(iErr, err_tmp)

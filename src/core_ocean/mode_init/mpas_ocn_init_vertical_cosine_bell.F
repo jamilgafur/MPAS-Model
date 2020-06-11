@@ -9,7 +9,7 @@
 !
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  ocn_init_cosine_bell
+!  ocn_init_vertical_cosine_bell
 !
 !> \brief MPAS ocean initialize case -- CVMix Unit Test
 !> WSwSBF means Wind Stress with Surface Buoyancy Forcing
@@ -22,7 +22,7 @@
 !
 !-----------------------------------------------------------------------
 
-module ocn_init_cosine_bell
+module ocn_init_vertical_cosine_bell
 
    use mpas_kind_types
    use mpas_io_units
@@ -51,8 +51,8 @@ module ocn_init_cosine_bell
    !
    !--------------------------------------------------------------------
 
-   public :: ocn_init_setup_cosine_bell, &
-             ocn_init_validate_cosine_bell
+   public :: ocn_init_setup_vertical_cosine_bell, &
+             ocn_init_validate_vertical_cosine_bell
 
    !--------------------------------------------------------------------
    !
@@ -66,7 +66,7 @@ contains
 
 !***********************************************************************
 !
-!  routine ocn_init_setup_cosine_bell
+!  routine ocn_init_setup_vertical_cosine_bell
 !
 !> \brief   Setup for cvmix WSwSBF unit test configuration
 !> \author  Todd Ringler
@@ -77,7 +77,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-   subroutine ocn_init_setup_cosine_bell(domain, iErr)!{{{
+   subroutine ocn_init_setup_vertical_cosine_bell(domain, iErr)!{{{
 
    !--------------------------------------------------------------------
 
@@ -111,36 +111,36 @@ contains
 
       character (len=StrKIND), pointer :: config_init_configuration
 
-      real (kind=RKIND), pointer ::config_cosine_bell_temperature, &
-                                   config_cosine_bell_salinity,    &
-                                   config_cosine_bell_radius,  &
-                                   config_cosine_bell_lat_center, &
-                                   config_cosine_bell_lon_center, &
-                                   config_cosine_bell_psi0,  &
-                                   config_cosine_bell_vel_pd, &
+      real (kind=RKIND), pointer ::config_vertical_cosine_bell_temperature, &
+                                   config_vertical_cosine_bell_salinity,    &
+                                   config_vertical_cosine_bell_radius,  &
+                                   config_vertical_cosine_bell_lat_center, &
+                                   config_vertical_cosine_bell_lon_center, &
+                                   config_vertical_cosine_bell_psi0,  &
+                                   config_vertical_cosine_bell_vel_pd, &
                                    sphere_radius
       ! assume no error
       iErr = 0
 
       ! get and test if this is the configuration specified
       call mpas_pool_get_config(domain % configs,'config_init_configuration', config_init_configuration)
-      if(config_init_configuration .ne. trim('cosine_bell')) return
+      if(config_init_configuration .ne. trim('vertical_cosine_bell')) return
 
       ! load the remaining configuration parameters
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_temperature', &
-                                config_cosine_bell_temperature)
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_salinity', &
-                    config_cosine_bell_salinity)
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_radius', &
-                                config_cosine_bell_radius)
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_psi0', &
-                                config_cosine_bell_psi0)
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_vel_pd', &
-                                config_cosine_bell_vel_pd)
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_lat_center', &
-                                config_cosine_bell_lat_center)
-      call mpas_pool_get_config(domain % configs,'config_cosine_bell_lon_center', &
-                                config_cosine_bell_lon_center)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_temperature', &
+                                config_vertical_cosine_bell_temperature)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_salinity', &
+                    config_vertical_cosine_bell_salinity)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_radius', &
+                                config_vertical_cosine_bell_radius)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_psi0', &
+                                config_vertical_cosine_bell_psi0)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_vel_pd', &
+                                config_vertical_cosine_bell_vel_pd)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_lat_center', &
+                                config_vertical_cosine_bell_lat_center)
+      call mpas_pool_get_config(domain % configs,'config_vertical_cosine_bell_lon_center', &
+                                config_vertical_cosine_bell_lon_center)
       !load data that required to initialize the ocean simulation
       block_ptr => domain % blocklist
       do while(associated(block_ptr))
@@ -197,18 +197,18 @@ contains
 
            ! Loop from surface through surface layer depth
         
-           activeTracers(index_temperature, :, iCell) = config_cosine_bell_temperature
-           activeTracers(index_salinity, :, iCell) = config_cosine_bell_salinity
+           activeTracers(index_temperature, :, iCell) = config_vertical_cosine_bell_temperature
+           activeTracers(index_salinity, :, iCell) = config_vertical_cosine_bell_salinity
           endif
 
         if(associated(debugTracers)) then
-          temp = sphere_radius*acos(sin(config_cosine_bell_lat_center)*sin(latCell(iCell)) + &
-                  cos(config_cosine_bell_lat_center)*cos(latCell(iCell))*cos(lonCell(iCell) - &
-                  config_cosine_bell_lon_center))
+          temp = sphere_radius*acos(sin(config_vertical_cosine_bell_lat_center)*sin(latCell(iCell)) + &
+                  cos(config_vertical_cosine_bell_lat_center)*cos(latCell(iCell))*cos(lonCell(iCell) - &
+                  config_vertical_cosine_bell_lon_center))
 
-          if( temp < config_cosine_bell_radius ) then
-            debugTracers(:,:,iCell) = config_cosine_bell_psi0/2.0_RKIND * ( 1.0_RKIND + &
-              cos(3.1415926_RKIND*temp/config_cosine_bell_radius))
+          if( temp < config_vertical_cosine_bell_radius ) then
+            debugTracers(:,:,iCell) = config_vertical_cosine_bell_psi0/2.0_RKIND * ( 1.0_RKIND + &
+              cos(3.1415926_RKIND*temp/config_vertical_cosine_bell_radius))
           else
             debugTracers(:,:,iCell) = 0.0_RKIND
           endif
@@ -241,7 +241,7 @@ contains
      !set normal velocity
      do iEdge = 1,nEdgesSolve
        velocity = 2.0*3.14159265*sphere_radius*cos(latEdge(iEdge)) / &
-         (86400.0_RKIND*config_cosine_bell_vel_pd)
+         (86400.0_RKIND*config_vertical_cosine_bell_vel_pd)
        normalVelocity(:,iEdge) = velocity*cos(angleEdge(iEdge))
      enddo
 
@@ -250,11 +250,11 @@ contains
 
   !--------------------------------------------------------------------
 
-   end subroutine ocn_init_setup_cosine_bell!}}}
+   end subroutine ocn_init_setup_vertical_cosine_bell!}}}
 
 !***********************************************************************
 !
-!  routine ocn_init_validate_cosine_bell
+!  routine ocn_init_validate_vertical_cosine_bell
 !
 !> \brief   Validation for CVMix WSwSBF mixing unit test case
 !> \author  Doug Jacobsen
@@ -265,7 +265,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-   subroutine ocn_init_validate_cosine_bell(configPool, packagePool,iocontext, iErr)!{{{
+   subroutine ocn_init_validate_vertical_cosine_bell(configPool, packagePool,iocontext, iErr)!{{{
 
    !--------------------------------------------------------------------
 
@@ -282,7 +282,7 @@ contains
 
       call mpas_pool_get_config(configPool, 'config_init_configuration',config_init_configuration)
 
-      if(config_init_configuration .ne. trim('cosine_bell')) return
+      if(config_init_configuration .ne. trim('vertical_cosine_bell')) return
 
       call mpas_pool_get_config(configPool, 'config_vert_levels',config_vert_levels)
 
@@ -290,11 +290,11 @@ contains
 
    !--------------------------------------------------------------------
 
-   end subroutine ocn_init_validate_cosine_bell!}}}
+   end subroutine ocn_init_validate_vertical_cosine_bell!}}}
 
 !***********************************************************************
 
-end module ocn_init_cosine_bell
+end module ocn_init_vertical_cosine_bell
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ! vim: foldmethod=marker

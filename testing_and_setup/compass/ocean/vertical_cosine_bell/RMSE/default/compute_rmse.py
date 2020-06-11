@@ -15,19 +15,19 @@ def rmse(resTag, sliceTime):
 
     fid.close()
     for i, line in enumerate(temp):
-        if "config_cosine_bell_lat_center" in line: 
+        if "config_vertical_cosine_bell_lat_center" in line: 
             ii = line.find('=')+1
             latCent = float(line[ii:])
-        if "config_cosine_bell_lon_center" in line: 
+        if "config_vertical_cosine_bell_lon_center" in line: 
             ii = line.find('=')+1
             lonCent = float(line[ii:])
-        if "config_cosine_bell_radius" in line: 
+        if "config_vertical_cosine_bell_radius" in line: 
             ii = line.find('=')+1
             radius = float(line[ii:])
-        if "config_cosine_bell_psi0" in line: 
+        if "config_vertical_cosine_bell_psi0" in line: 
             ii = line.find('=')+1
             psi0 = float(line[ii:])
-        if "config_cosine_bell_vel_pd" in line: 
+        if "config_vertical_cosine_bell_vel_pd" in line: 
             ii = line.find('=')+1
             pd = float(line[ii:])
 

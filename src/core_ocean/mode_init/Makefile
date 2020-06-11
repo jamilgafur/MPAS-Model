@@ -27,7 +27,8 @@ TEST_CASES = mpas_ocn_init_baroclinic_channel.o \
              mpas_ocn_init_isomip_plus.o \
              mpas_ocn_init_hurricane.o \
              mpas_ocn_init_tidal_boundary.o \
-						 mpas_ocn_init_cosine_bell.o
+	     mpas_ocn_init_horizontal_cosine_bell.o \
+             mpas_ocn_init_vertical_cosine_bell.o
              #mpas_ocn_init_TEMPLATE.o
 
 all: init_mode
