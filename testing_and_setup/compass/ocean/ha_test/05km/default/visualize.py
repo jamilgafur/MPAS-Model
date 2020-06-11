@@ -66,7 +66,7 @@ def main():
     # updates progress bar
     printProgressBar(i+1, gif_frames, prefix = "Saving Frames", suffix = "Compleate", length=50)
  
-    plt.scatter(data.xCell, data.yCell, c=data.tracer1[i,:,2], vmin=0 , vmax=1)
+    plt.scatter(data.xCell, data.yCell, c=data.tracer1[i,:,0], vmin=0 , vmax=1)
     plt.savefig(dir_name +"/"+ str(i)+".png")
 
   # new line for next progress bar
@@ -82,7 +82,7 @@ def main():
     printProgressBar(i+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
   # creates the gif
-  imageio.mimsave('../05km_KPP_tracer1.gif', images)    
+  imageio.mimsave('../05km_horizontal_advection_resolution_study.gif', images)    
   printProgressBar(gif_frames+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
 main()
