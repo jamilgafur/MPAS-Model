@@ -84,7 +84,7 @@ def main():
   plt.title("y = {} x + {}".format(m,b))
   plt.yscale("log")
   plt.scatter(resolution,rmse)
-  plt.savefig("../visualization/rmse.png")
+  plt.savefig("./rmse.png")
 
 
 main()
