@@ -2,7 +2,13 @@
     <case name="init_step">
         <step executable="./run.py"/>
     </case>
+
     <case name="forward">
         <step executable="./run.py"/>
     </case>
+
+   <case name="visualization">
+    <step executable="./visualize.py" quiet="true" pre_message=" * generating visualization gif..." post_message="     complete!    "/>
+   </case>
+
 </driver_script>

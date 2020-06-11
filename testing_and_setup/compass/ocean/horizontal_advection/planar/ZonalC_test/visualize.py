@@ -42,9 +42,10 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
 def main():
   # load in the data
   filename = None
-  filename = glob.glob("forward/output/KPP*")
+  print("we are in {}".format(os.getcwd()))
+  filename = glob.glob("../forward/output/*")
   if len(filename) == 0:
-    print("KPP File not found in forward/output ending program")
+    print("File not found in forward/output ending program")
     quit()
   else:
     filename = filename[0]
@@ -52,15 +53,10 @@ def main():
   # open the dataset 
   data = xr.open_dataset(filename)
 
-  answer = input("There are {} frames, would you like to continue? [y/(n)]:  ".format(data.tracer1.shape[0])) or 'n'  
-  if not 'y' in answer:
-    quit()
-
   # set the proper bounds with alittle extra padding
-  plt.xlim(-10,data.xCell.shape[0]+10)
-  plt.ylim(-10,data.yCell.shape[0]+10)
+  plt.xlim(-10,500000)
+  plt.ylim(-10,434000)
   gif_frames = data.tracer1.shape[0]
-
   # make directory to save images in
   dir_name = "images"
   os.makedirs(dir_name, exist_ok=True)
@@ -68,11 +64,11 @@ def main():
   # cycle through each frame and plot its data and save it as a figure
   # progress bar for making frames
   printProgressBar(0, gif_frames, prefix = "Saving Frames", suffix = "Compleate", length=50)
-  for i in range(gif_frames):
+  for i in range(gif_frames-1):
     # updates progress bar
     printProgressBar(i+1, gif_frames, prefix = "Saving Frames", suffix = "Compleate", length=50)
  
-    plt.scatter(data.xCell, data.yCell, c=data.tracer1[i,:,99])
+    plt.scatter(data.xCell, data.yCell, c=data.tracer1[i,:,2], vmin=0 , vmax=1)
     plt.savefig(dir_name +"/"+ str(i)+".png")
 
   # new line for next progress bar
@@ -83,12 +79,12 @@ def main():
   # progress bar for mergin frames
   printProgressBar(0, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
   # cycles through all the frames and saves the data to the array
-  for i in range(gif_frames):
+  for i in range(gif_frames-1):
     images.append(imageio.imread(dir_name+"/"+str(i)+".png"))
     printProgressBar(i+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
   # creates the gif
-  imageio.mimsave('Zonal_advection.gif', images)    
+  imageio.mimsave('../25km_KPP_tracer1.gif', images)    
   printProgressBar(gif_frames+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
 main()

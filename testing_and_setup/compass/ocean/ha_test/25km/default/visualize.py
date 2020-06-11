@@ -54,8 +54,6 @@ def main():
   data = xr.open_dataset(filename)
 
   # set the proper bounds with alittle extra padding
-  plt.xlim(-10,500000)
-  plt.ylim(-10,434000)
   gif_frames = data.tracer1.shape[0]
   # make directory to save images in
   dir_name = "images"
@@ -68,7 +66,7 @@ def main():
     # updates progress bar
     printProgressBar(i+1, gif_frames, prefix = "Saving Frames", suffix = "Compleate", length=50)
  
-    plt.scatter(data.xCell, data.yCell)#, c=data.tracer1[i,:,3], vmin=0 , vmax=1)
+    plt.scatter(data.xCell, data.yCell, c=data.tracer1[i,:,2], vmin=0 , vmax=1)
     plt.savefig(dir_name +"/"+ str(i)+".png")
 
   # new line for next progress bar

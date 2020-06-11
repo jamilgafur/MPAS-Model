@@ -13,7 +13,7 @@ measured by RPE is due to spurious numerical diffusion.
 -->
 <regression_suite name="Horizontal_Advection_Resolution_Test">
 
-	<test name="Horizontal Advection 5km - Mesh Test" core="ocean" configuration="ha_test" resolution="5km" test="default">
+	<test name="Horizontal Advection 05km - Mesh Test" core="ocean" configuration="ha_test" resolution="05km" test="default">
 	    <script name="run_test.py"/>
 	</test>
 
@@ -25,8 +25,5 @@ measured by RPE is due to spurious numerical diffusion.
 	    <script name="run_test.py"/>
 	</test>
 
-        <test name="RMSE -  Horizontal Resolution" core="ocean" configuration="ha_test" resolution="data_analysis" test="default">
-            <script name="run.py"/>
-        </test>
 
 </regression_suite>
