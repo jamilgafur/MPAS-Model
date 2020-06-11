@@ -4,14 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.image import imread
 import numpy as np
-
+import os
 
 def get_RMSE(folder_name):
   """
   calculates the RMSE of a given resolution
   """
 
-  KPP = glob("../"+folder_name+"/default/forward/output/KPP*")
+  print(os.getcwd())
+  KPP = glob("../../"+folder_name+"/default/forward/output/*")
+  print(KPP)
   KPP = KPP[0]
   print("Processing... {}".format(KPP))
 
@@ -61,7 +63,7 @@ def get_RMSE(folder_name):
   
 
 def main():
-  folders = ["5km", "10km", "25km"]
+  folders = ["05km", "10km", "25km"]
   resolution = []
   rmse = []
   for folder in folders:

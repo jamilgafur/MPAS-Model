@@ -84,7 +84,7 @@ def main():
     printProgressBar(i+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
   # creates the gif
-  imageio.mimsave('../10km_KPP_tracer1.gif', images)    
+  imageio.mimsave('../05km_KPP_tracer1.gif', images)    
   printProgressBar(gif_frames+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
 main()

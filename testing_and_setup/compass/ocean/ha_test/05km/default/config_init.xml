@@ -55,7 +55,7 @@
         <step executable="planar_hex">
             <argument flag="--nx">20</argument>
             <argument flag="--ny">20</argument>
-            <argument flag="--dc">10000</argument>
+            <argument flag="--dc">5000</argument>
             <argument flag="--outFileName">mesh.nc</argument>
         </step>
 
