@@ -22,7 +22,8 @@ def get_RMSE(folder_name):
 
 
   # the center and radius of the cylindars starting point
-  simulated_center_location_x =  250000.58 
+  simulated_center_location_x =  250000.58
+  simulated_center_location_y =  216506.35 
   radius = 50000
   vi = 1
   nt = 30
@@ -41,20 +42,32 @@ def get_RMSE(folder_name):
   distance = vi * totalTime
   centNew = 250000 + distance
 
+  #print(centNew)
   while centNew > xLen:
     centNew -= xLen
+  
+  # get last timeslice and create a temparray 
+  tracerE = np.zeros_like(data.tracer1[-1,:,0].values)
 
-  tracerE = np.zeros_like(data.tracer1[-1,:,:].values)
-  last_frame = data.tracer1.shape[0]-1
+  # xDist = xCell(iCell) - config_horizontal_advection_x_cent
+  #yDist = yCell(iCell) - config_horizontal_advection_y_cent
+  #debugTracers(:,:,iCell) = exp(-config_horizontal_advection_gaussian_width*(xDist**2.0 + yDist**2.0))
+
 
   for i in range(len(data.xCell.values)):
-    if abs(data.xCell.values[i] - centNew) <= radius:
-      # if a point is inside the circle set its simulated value to 1
-      tracerE[i,:] = 1.0
-
-
+    # get distance between xcell and the center
+    distance_x = simulated_center_location_x - data.xCell[i]
+    distance_y = simulated_center_location_y - data.yCell[i]
+    # if a point is inside the circle set its simulated value to 1
+    tracerE[i] = ( ((distance_x) **2) + (distance_y**2) ) * -2e-10 
+    tracerE[i] = np.exp(tracerE[i])
+ 
+  #plt.scatter(data.xCell, data.yCell, c=tracerE, vmin=0, vmax=1)
+  #plt.savefig(folder_name + "_simulated.png")
+  #plt.scatter(data.xCell, data.yCell, c=data.tracer1[-1,:,0], vmin=0 , vmax=1)
+  #plt.savefig(folder_name +"_real.png")
   # get the RMSE of the simulated values to the actual values
-  rmse = np.sqrt(np.mean(tracerE - data.tracer1[-1,:,:].values)**2)
+  rmse = np.sqrt(np.mean(tracerE - data.tracer1[-1,:,0].values)**2)
 
   print("For  {} RMSE = {}".format(folder_name, rmse))
 
@@ -73,7 +86,7 @@ def main():
   
   print(resolution)
   print(rmse)
-
+  quit()
   # find line of best fit
   resolution = np.array(resolution)
   rmse = np.array(rmse)
@@ -81,12 +94,15 @@ def main():
   m,b = np.polyfit(resolution, rmse,1)
   print("f(x) = m * x + B\n\tm: {}\n\tb: {}".format(m,b))
 
+  luke_value =  np.log( (rmse[-1] / rmse[0]) ) / np.log( (resolution[0] - resolution[-1]) )
+  print("{} = log(rmse(25k) / rmse(5km)) / log(25/5)".format(luke_value))
+
   points = np.linspace(min(resolution), max(resolution),100)
   plt.plot(points, m*points+b)
   plt.title("y = {} x + {}".format(m,b))
   plt.yscale("log")
   plt.scatter(resolution,rmse)
-  plt.savefig("./rmse.png")
+  plt.savefig("rmse.png")
 
 
 main()
