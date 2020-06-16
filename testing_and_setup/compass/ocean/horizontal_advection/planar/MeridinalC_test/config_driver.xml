@@ -7,9 +7,5 @@
         <step executable="./run.py"/>
     </case>
 
-   <case name="visualize">
-
-    <step executable="./run.py" pre_message=" * generating visualization gif..." post_message="     complete!    "/>
-   </case>
 
 </driver_script>

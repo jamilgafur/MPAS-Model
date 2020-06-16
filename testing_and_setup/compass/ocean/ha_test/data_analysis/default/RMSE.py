@@ -64,8 +64,9 @@ def get_RMSE(folder_name):
  
   #plt.scatter(data.xCell, data.yCell, c=tracerE, vmin=0, vmax=1)
   #plt.savefig(folder_name + "_simulated.png")
-  #plt.scatter(data.xCell, data.yCell, c=data.tracer1[-1,:,0], vmin=0 , vmax=1)
-  #plt.savefig(folder_name +"_real.png")
+  #diff = tracerE - data.tracer1[-1,:,0]
+  #plt.scatter(data.xCell, data.yCell, c=diff, vmin=0 , vmax=1)
+  #plt.savefig(folder_name +"_diff.png")
   # get the RMSE of the simulated values to the actual values
   rmse = np.sqrt(np.mean(tracerE - data.tracer1[-1,:,0].values)**2)
 
@@ -86,14 +87,13 @@ def main():
   
   print(resolution)
   print(rmse)
-  quit()
   # find line of best fit
   resolution = np.array(resolution)
   rmse = np.array(rmse)
-
-  m,b = np.polyfit(resolution, rmse,1)
+  
+  #m,b = np.polyfit(resolution, rmse,1)
+  m, b = np.polyfit(np.log(resolution), np.log(rmse), 1)
   print("f(x) = m * x + B\n\tm: {}\n\tb: {}".format(m,b))
-
   luke_value =  np.log( (rmse[-1] / rmse[0]) ) / np.log( (resolution[0] - resolution[-1]) )
   print("{} = log(rmse(25k) / rmse(5km)) / log(25/5)".format(luke_value))
 
@@ -101,6 +101,7 @@ def main():
   plt.plot(points, m*points+b)
   plt.title("y = {} x + {}".format(m,b))
   plt.yscale("log")
+  print("y = {} x + {}".format(m,b))
   plt.scatter(resolution,rmse)
   plt.savefig("rmse.png")
 

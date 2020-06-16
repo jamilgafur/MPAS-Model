@@ -54,8 +54,6 @@ def main():
   data = xr.open_dataset(filename)
 
   # set the proper bounds with alittle extra padding
-  plt.xlim(-10,500000)
-  plt.ylim(-10,434000)
   gif_frames = data.tracer1.shape[0]
   # make directory to save images in
   dir_name = "images"
@@ -64,7 +62,7 @@ def main():
   # cycle through each frame and plot its data and save it as a figure
   # progress bar for making frames
   printProgressBar(0, gif_frames, prefix = "Saving Frames", suffix = "Compleate", length=50)
-  for i in range(gif_frames-1):
+  for i in range(0,gif_frames-1,2):
     # updates progress bar
     printProgressBar(i+1, gif_frames, prefix = "Saving Frames", suffix = "Compleate", length=50)
  
@@ -77,14 +75,14 @@ def main():
   # holds the imagenames
   images = []
   # progress bar for mergin frames
-  printProgressBar(0, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
+  printProgressBar(0, gif_frames+2, prefix = "Making Gif", suffix = "Compleate", length=50)
   # cycles through all the frames and saves the data to the array
-  for i in range(gif_frames-1):
+  for i in range(0,gif_frames-1),2:
     images.append(imageio.imread(dir_name+"/"+str(i)+".png"))
     printProgressBar(i+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
   # creates the gif
-  imageio.mimsave('../25km_KPP_tracer1.gif', images)    
+  imageio.mimsave('../Horizontal_Planar_Zonal_Advection.gif', images)  
   printProgressBar(gif_frames+1, gif_frames+1, prefix = "Making Gif", suffix = "Compleate", length=50)
 
 main()
