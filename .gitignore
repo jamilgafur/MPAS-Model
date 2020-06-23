@@ -9,6 +9,7 @@ src/operators/*.f90
 
 # All object files
 *.o
+*~
 
 # All mod files
 *.mod
@@ -60,3 +61,20 @@ stream_list.*
 *.i90
 
 src/core_*/inc
+
+# Pyton bytecode
+*.pyc
+
+# Images
+*.png
+
+# Matlab variable files
+*.mat
+
+# Jigsaw output files
+*.jig
+*.log
+*.msh
+
+# Editor recovery files
+*.swp

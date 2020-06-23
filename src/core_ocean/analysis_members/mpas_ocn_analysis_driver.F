@@ -48,6 +48,8 @@ module ocn_analysis_driver
    use ocn_transect_transport
    use ocn_eddy_product_variables
    use ocn_moc_streamfunction
+   use ocn_ocean_heat_content
+   use ocn_mixed_layer_heat_budget
 !   use ocn_TEM_PLATE
 
    implicit none
@@ -94,6 +96,8 @@ module ocn_analysis_driver
 
    character (len=StrKIND), parameter :: timeSeriesDailyTAG = 'Daily'
    character (len=StrKIND), parameter :: timeSeriesMonthlyTAG = 'Monthly'
+   character (len=StrKIND), parameter :: timeSeriesMonthlyMinTAG = 'MonthlyMin'
+   character (len=StrKIND), parameter :: timeSeriesMonthlyMaxTAG = 'MonthlyMax'
    character (len=StrKIND), parameter :: timeSeriesClimatologyTAG = 'Climatology'
    character (len=StrKIND), parameter :: timeSeriesCustomTAG = 'Custom'
    character (len=StrKIND), parameter :: regionalStatsDailyTAG = 'Daily'
@@ -175,11 +179,14 @@ contains
       call mpas_pool_add_config(analysisMemberList, 'lagrPartTrack', 1)
       call mpas_pool_add_config(analysisMemberList, 'eliassenPalm', 1)
       call mpas_pool_add_config(analysisMemberList, 'mixedLayerDepths', 1)
+      call mpas_pool_add_config(analysisMemberList, 'mixedLayerHeatBudget', 1)
       call mpas_pool_add_config(analysisMemberList, 'rpnCalculator', 1)
       call mpas_pool_add_config(analysisMemberList, 'timeSeriesStatsDaily', 1)
       call mpas_pool_add_config(analysisMemberList, 'timeSeriesStatsMonthly', 1)
       call mpas_pool_add_config(analysisMemberList, 'timeSeriesStatsClimatology', 1)
       call mpas_pool_add_config(analysisMemberList, 'timeSeriesStatsCustom', 1)
+      call mpas_pool_add_config(analysisMemberList, 'timeSeriesStatsMonthlyMin', 1)
+      call mpas_pool_add_config(analysisMemberList, 'timeSeriesStatsMonthlyMax', 1)
       call mpas_pool_add_config(analysisMemberList, 'regionalStatsDaily', 1)
       call mpas_pool_add_config(analysisMemberList, 'regionalStatsWeekly', 1)
       call mpas_pool_add_config(analysisMemberList, 'regionalStatsMonthly', 1)
@@ -189,6 +196,7 @@ contains
       call mpas_pool_add_config(analysisMemberList, 'transectTransport', 1)
       call mpas_pool_add_config(analysisMemberList, 'eddyProductVariables', 1)
       call mpas_pool_add_config(analysisMemberList, 'mocStreamfunction', 1)
+      call mpas_pool_add_config(analysisMemberList, 'oceanHeatContent', 1)
 !     call mpas_pool_add_config(analysisMemberList, 'temPlate', 1)
 
       ! DON'T EDIT BELOW HERE
@@ -612,7 +620,7 @@ contains
                end if
             end if
 
-            ! Reset configs to false, so we don't write or compute the state every coupling interval for use within ACME.
+            ! Reset configs to false, so we don't write or compute the state every coupling interval for use within E3SM.
             ! This ensures that these startup options are only done once.
             if ( config_AM_compute_on_startup) then
               config_AM_compute_on_startup = .false.
@@ -1042,6 +1050,12 @@ contains
       else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsCustom' ) then
          call ocn_bootstrap_time_series_stats(domain, timeSeriesCustomTAG, &
            err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMin' ) then
+         call ocn_bootstrap_time_series_stats(domain, timeSeriesMonthlyMinTAG, &
+           err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMax' ) then
+         call ocn_bootstrap_time_series_stats(domain, timeSeriesMonthlyMaxTAG, &
+           err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'pointwiseStats' ) then
          call ocn_bootstrap_pointwise_stats(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'transectTransport' ) then
@@ -1073,6 +1087,7 @@ contains
       integer :: nameLength, err_tmp
 
       iErr = 0
+       err_tmp = 0
 
       nameLength = len_trim(analysisMemberName)
 
@@ -1112,6 +1127,10 @@ contains
         call ocn_init_eddy_product_variables(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_init_moc_streamfunction(domain, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'oceanHeatContent' ) then
+         call ocn_init_ocean_heat_content(domain, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'mixedLayerHeatBudget' ) then
+         call ocn_init_mixed_layer_heat_budget(domain,err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
 !        call ocn_init_TEM_PLATE(domain, err_tmp)
       ! rpn is third to last
@@ -1135,6 +1154,10 @@ contains
          call ocn_init_time_series_stats(domain, timeSeriesClimatologyTAG, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsCustom' ) then
          call ocn_init_time_series_stats(domain, timeSeriesCustomTAG, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMin' ) then
+         call ocn_init_time_series_stats(domain, timeSeriesMonthlyMinTAG, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMax' ) then
+         call ocn_init_time_series_stats(domain, timeSeriesMonthlyMaxTAG, err_tmp)
       end if
 
       iErr = ior(iErr, err_tmp)
@@ -1161,7 +1184,7 @@ contains
       integer :: nameLength, err_tmp
 
       iErr = 0
-
+      err_tmp = 0
       nameLength = len_trim(analysisMemberName)
 
       if ( analysisMemberName(1:nameLength) == 'globalStats' ) then
@@ -1200,6 +1223,10 @@ contains
         call ocn_compute_eddy_product_variables(domain, timeLevel, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_compute_moc_streamfunction(domain, timeLevel, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'oceanHeatContent' ) then
+         call ocn_compute_ocean_heat_content(domain, timeLevel, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'mixedLayerHeatBudget' ) then
+         call ocn_compute_mixed_layer_heat_budget(domain, timeLevel, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
 !        call ocn_compute_TEM_PLATE(domain, timeLevel, err_tmp)
       ! rpn is third to last
@@ -1227,6 +1254,12 @@ contains
       else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsCustom' ) then
          call ocn_compute_time_series_stats(domain, timeLevel, &
            timeSeriesCustomTAG, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMin' ) then
+         call ocn_compute_time_series_stats(domain, timeLevel, &
+           timeSeriesMonthlyMinTAG, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMax' ) then
+         call ocn_compute_time_series_stats(domain, timeLevel, &
+           timeSeriesMonthlyMaxTAG, err_tmp)
       end if
 
       iErr = ior(iErr, err_tmp)
@@ -1252,7 +1285,7 @@ contains
       integer :: nameLength, err_tmp
 
       iErr = 0
-
+      err_tmp = 0
       nameLength = len_trim(analysisMemberName)
 
       if ( analysisMemberName(1:nameLength) == 'globalStats' ) then
@@ -1291,6 +1324,10 @@ contains
         call ocn_restart_eddy_product_variables(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_restart_moc_streamfunction(domain, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'oceanHeatContent' ) then
+         call ocn_restart_ocean_heat_content(domain, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'mixedLayerHeatBudget' ) then
+         call ocn_restart_mixed_layer_heat_budget(domain, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
 !        call ocn_restart_TEM_PLATE(domain, err_tmp)
       ! rpn is third to last
@@ -1314,6 +1351,10 @@ contains
          call ocn_restart_time_series_stats(domain, timeSeriesClimatologyTAG, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsCustom' ) then
          call ocn_restart_time_series_stats(domain, timeSeriesCustomTAG, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMin' ) then
+         call ocn_restart_time_series_stats(domain, timeSeriesMonthlyMinTAG, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMax' ) then
+         call ocn_restart_time_series_stats(domain, timeSeriesMonthlyMaxTAG, err_tmp)
       end if
 
       iErr = ior(iErr, err_tmp)
@@ -1339,7 +1380,7 @@ contains
       integer :: nameLength, err_tmp
 
       iErr = 0
-
+      err_tmp = 0
       nameLength = len_trim(analysisMemberName)
 
       if ( analysisMemberName(1:nameLength) == 'globalStats' ) then
@@ -1378,6 +1419,10 @@ contains
         call ocn_finalize_eddy_product_variables(domain, err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'mocStreamfunction' ) then
          call ocn_finalize_moc_streamfunction(domain, err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'oceanHeatContent' ) then
+         call ocn_finalize_ocean_heat_content(domain,err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'mixedLayerHeatBudget' ) then
+         call ocn_finalize_mixed_layer_heat_budget(domain, err_tmp)
 !     else if ( analysisMemberName(1:nameLength) == 'temPlate' ) then
 !        call ocn_finalize_TEM_PLATE(domain, err_tmp)
       ! rpn is third to last
@@ -1404,6 +1449,12 @@ contains
            err_tmp)
       else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsCustom' ) then
          call ocn_finalize_time_series_stats(domain, timeSeriesCustomTAG, &
+           err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMin' ) then
+         call ocn_finalize_time_series_stats(domain, timeSeriesMonthlyMinTAG, &
+           err_tmp)
+      else if ( analysisMemberName(1:nameLength) == 'timeSeriesStatsMonthlyMax' ) then
+         call ocn_finalize_time_series_stats(domain, timeSeriesMonthlyMaxTAG, &
            err_tmp)
       end if
 
