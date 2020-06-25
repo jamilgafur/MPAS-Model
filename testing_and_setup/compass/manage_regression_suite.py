@@ -228,6 +228,17 @@ def local_parallel_setup_script(
     local_parallel_code = write_regression_local_parallel_top(
         work_dir, suite_tag, args.nodes)
 
+
+
+    dev_null = open('/dev/null', 'a')
+    subprocess.check_call(['chmod',
+                           'a+x',
+                           '{}'.format(regression_script_name)],
+                           stdout=dev_null,
+                           stderr=dev_null)
+    dev_null.close()
+
+
     setup_suite(
         suite_root,
         args.work_dir,
@@ -274,8 +285,8 @@ def write_regression_local_parallel_testcase_data(local_parallel_code, work_dir,
     for key in pre_testcase_data.keys():
         local_parallel_code += "locations.append('" + \
             pre_testcase_data[key]['path'] + "')\n"
-        local_parallel_code += "commands.append(['time' , '-p' , '" + os.getcwd(
-        ) + "/" + pre_testcase_data[key]['path'] + "/' + str(run_file_names[{}])])\n".format(str(index))
+        local_parallel_code += "commands.append(['time' , '-p' , '" + work_dir \
+                               + "/" + pre_testcase_data[key]['path'] + "/' + str(run_file_names[{}])])\n".format(str(index))
         local_parallel_code += "procs.append(" + \
             str(pre_testcase_data[key]['procs']) + ")\n"
         local_parallel_code += "prereq_commands.append([locations[" + str(
@@ -410,7 +421,7 @@ def write_regression_local_parallel_top(work_dir, suite_tag, nodes):
 
 def write_regression_script_testcase_data_bottom(regression_script_code):
     # {{{
-    regression_script_code += "print('\n\n\nTEST RUNTIMES & Errors:')\n"
+    regression_script_code += "print('\\n\\n\\nTEST RUNTIMES & ERROR:')\n"
     regression_script_code += "case_output = '/case_outputs/'\n"
     regression_script_code += "totaltime = 0\n"
     regression_script_code += "for _, _, files in os.walk(base_path + case_output):\n"
@@ -483,12 +494,11 @@ def setup_suite(suite_tag, work_dir, model_runtime, config_file, baseline_dir,
 
     regression_script_code = ""
 
-    if not args.local_parallel:
-        # Create regression suite run script
-        regression_script_name = '{}/{}.py'.format(work_dir, suite_name)
-        regression_script = open('{}'.format(regression_script_name), 'w')
+    # Create regression suite run script
+    regression_script_name = '{}/{}.py'.format(work_dir, suite_name)
+    regression_script = open('{}'.format(regression_script_name), 'w')
 
-        regression_script_code = write_regression_script_testcase_data_top(work_dir)
+    regression_script_code = write_regression_script_testcase_data_top(work_dir)
 
     for child in suite_tag:
         # Process <test> tags within the test suite
@@ -502,17 +512,18 @@ def setup_suite(suite_tag, work_dir, model_runtime, config_file, baseline_dir,
                 baseline_dir,
                 verbose)
 
+    dev_null = open('/dev/null', 'a')
+    subprocess.check_call(['chmod',
+                           'a+x',
+                           '{}'.format(regression_script_name)],
+                           stdout=dev_null,
+                           stderr=dev_null)
+    dev_null.close()
     if not args.local_parallel:
-        dev_null = open('/dev/null', 'a')
-        subprocess.check_call(['chmod',
-                               'a+x',
-                               '{}'.format(regression_script_name)],
-                              stdout=dev_null,
-                              stderr=dev_null)
-        dev_null.close()
 
         regression_script_code = write_regression_script_testcase_data_bottom(
             regression_script_code)
+
         return regression_script, regression_script_code
     # }}}
 
