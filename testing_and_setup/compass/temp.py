@@ -52,17 +52,17 @@ for key in testcase_data.keys():
 def run(key):
     os.chdir(base_path)
     case_output = open('case_outputs/{}'.format(key.replace(" ", '_')), 'w')
-    test_failed = False
-    os.chdir('{}'.format(testcase_data[key]['path']))
-    #print('\t\t{}--** Running case {} **'.format(number_of_procs, key))
-    command = ['time', '-p', 'sleep', '5']#'./{}'.format(testcase_data[key]['filename'])]
-   # print("\t\t\t{}".format(command))
+    print('\t\t** Running case {} **'.format(key))
+    os.chdir("./{}".format(testcase_data[key]['path']))
+    command = ['time', '-p', './{}'.format(testcase_data[key]['filename'])]
+    print("\t\t\t{}".format(command))
     try:
         run =  subprocess.Popen(command, stdout=case_output, stderr=case_output)
     except subprocess.CalledProcessError:
         print('   ** FAIL (See case_outputs/{} for more information)'.format(key.replace(" ", '_')))
     case_output.close()
 
+    os.chdir(base_path)
     return (run, key)
 
 
@@ -122,13 +122,13 @@ while True:
                 print("DONE: {} {} {}".format(testcase_data[key]['procs'], number_of_procs, running_key))
             else:
                 try: 
-                    process[0].wait(timeout=1)
+                    process[0].wait(timeout=3)
                 except subprocess.TimeoutExpired:
                     continue
         if running == []:
             processing_phase = False
 
-    print("{} {} {}".format(adding_phase, processing_phase, done)) 
+    #print("{} {} {}".format(adding_phase, processing_phase, done)) 
     if not adding_phase and not processing_phase and done:
         break
 
