@@ -8,13 +8,16 @@ import os
 dpi = 200
 
 def diff_eq(r,t,D):
+    print("r:{}\nD:{}\nt:{}".format(r,D,t))
     numerator_exponent = (-r**2) / (4 * D * t)
     numerator = np.e ** numerator_exponent
-    denominator =  (4 * np.pie * t * D)
+    denominator =  (4 * np.pi * t * D)
 
+    print("-----{}".format(numerator / denominator))
     return numerator / denominator
 
 def diffusion(resTag,sliceTime):
+    print("in")
 # resTag is the resolution to compute
 # sliceTag is the time slice, assume 1 hour output and same for all cases
     fid = open('../../../{}/default/init_step/namelist.ocean'.format(resTag),'r')
@@ -51,31 +54,47 @@ def diffusion(resTag,sliceTime):
     MN = float(tt[16:18])
     t = 86400.0*DY+HR*3600.+MN
 
+    # calculate runtime
+    totalTime = ((DY-1)*24. + HR)*3600.
 
-    #find new location of blob center
-    #center is based on equatorial velocity
-    R = init.sphere_radius
-    distTrav = 2.0*3.14159265*R / (86400.0*pd)*t
-    #distance in radians is
-    distRad = distTrav / R
-    newLon = lonCent + distRad
-    if newLon > 2.0*np.pi:
-        newLon -= 2.0*np.pi
+    vi = 1
+    simulated_center_location_x =  250000.58
+    simulated_center_location_y =  216506.35 
 
-    #construct analytic tracer
-    tracer = np.zeros_like(init.tracer1[0,:,0].values)
-    latC = init.latCell.values
-    lonC = init.lonCell.values
-    temp = R*np.arccos(np.sin(latCent)*np.sin(latC) + np.cos(latCent)*np.cos(latC)*np.cos(lonC - newLon))
-    mask = temp < radius
-    tracer[mask] = psi0 / 2.0 * (1.0 + np.cos(3.1415926*temp[mask]/radius))
+    # update center
+    xLen = init.x_period + 1
+    distance = vi * totalTime
+    centNew = 250000 + distance
 
-    #oad forward mode data
-    tracerF = ds.tracer1[sliceTime,:,0].values
-    rmse = np.sqrt(np.mean((tracerF-tracer)**2))
+    while centNew > xLen:
+        centNew -= xLen
+
+    t = 0
+    values = []
+    for i in range(len(init.xCell.values)):
+        # get distance between xcell and the center
+        distance_x = simulated_center_location_x - init.xCell[i]
+        distance_y = simulated_center_location_y - init.yCell[i]
+
+        # get the radius
+        r = ( ((distance_x) **2) + (distance_y**2) ) * -2e-10
+        r = r / 2      
+        r = r.values
+        # get diffusion 
+
+        #tracerF = ds.tracer1[sliceTime,:,0].values
+        #rmse = np.sqrt(np.mean((tracerF-tracer)**2))
+        t = t + 10 
+        del2 = diff_eq(r,t,10)
+        values.append( del2)    
+        if t == 10000:
+            break 
+    print(values)
 
     init.close()
     ds.close()
+    quit()
+
     return rmse, init.dims['nCells']
 
 
@@ -150,7 +169,7 @@ def main():
     xtemp = []
     ytemp = []
     for i in range(len(res)):
-        exec('rmse'+res[i]+',nCells'+res[i]+' = rmse(res[i],24)')
+        exec('rmse'+res[i]+',nCells'+res[i]+' = diffusion(res[i],24)')
         exec('xtemp.append(nCells'+res[i]+')')
         exec('ytemp.append(rmse'+res[i]+')')
     xdata = np.asarray(xtemp)
