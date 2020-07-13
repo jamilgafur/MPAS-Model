@@ -221,6 +221,7 @@ def local_setup_script(
         # flush existing regression suite output file
         open(work_dir + '/manage_regression_suite.py.out', 'w').close()
 
+    # creates the script writer and generates the top section of the code
     if isparallel: 
         script_name = '{}/parallel_{}.py'.format(work_dir, suite_name)
         local_script = open('{}'.format(script_name), 'w')
@@ -230,9 +231,9 @@ def local_setup_script(
         script_name = '{}/{}.py'.format(work_dir, suite_name)
         local_script = open('{}'.format(script_name), 'w')
         local_code = write_script_top(
-            work_dir, nodes)
+            work_dir)
 
-
+    # makes the script executable
     dev_null = open('/dev/null', 'a')
     subprocess.check_call(['chmod',
                            'a+x',
@@ -241,7 +242,7 @@ def local_setup_script(
                            stderr=dev_null)
     dev_null.close()
 
-
+    # sets up rest of the code 
     local_code = setup_suite(
         suite_root,
         work_dir,
@@ -258,7 +259,6 @@ def local_setup_script(
 
 def write_local_parallel_data(local_parallel_code, work_dir, testcase_data):
         # {{{
-    local_parallel_code += "#code to save testcase_data here\n"
     local_parallel_code += "testcase_data = {}\n"
     for name in testcase_data.keys():
         local_parallel_code += "testcase_data['{}'] = {}\n".format(name, testcase_data[name])
@@ -269,7 +269,6 @@ def write_local_parallel_data(local_parallel_code, work_dir, testcase_data):
 def write_local_parallel_bottom(local_parallel_code):
     # {{{
     local_parallel_code += "# rewrite algorithm to read in testcase_data\n# must use args.work_dir instead of os.getcwd\n"
-    local_parallel_code += "start_time = time.time()\n"
     local_parallel_code += "def run(key):\n"
     local_parallel_code += "  os.chdir(base_path)\n"
     local_parallel_code += "  case_output = open('case_outputs/{}'.format(key.replace(' ', '_')), 'w+') \n"
@@ -301,11 +300,11 @@ def write_local_parallel_bottom(local_parallel_code):
     local_parallel_code += "  if adding_phase:\n"
     local_parallel_code += "    running_names = [running_proc[1] for running_proc in running]\n"
     local_parallel_code += "    for key in testcase_data.keys():\n"
-    local_parallel_code += "      if not key in compleated and not key in running_names:\n"
+    local_parallel_code += "      if not key in completed and not key in running_names:\n"
     local_parallel_code += "        if not testcase_data[key]['prereqs'] == [] and testcase_data[key]['runnable'] == False:\n"
     local_parallel_code += "          prereq_tests = [prereq['name'] for prereq in testcase_data[key]['prereqs']]\n"
-    local_parallel_code += "          prereq_compleated =  all(prereq in compleated for prereq in prereq_tests)\n"
-    local_parallel_code += "          if prereq_compleated:\n"
+    local_parallel_code += "          prereq_completed =  all(prereq in completed for prereq in prereq_tests)\n"
+    local_parallel_code += "          if prereq_completed:\n"
     local_parallel_code += "            testcase_data[key]['runnable'] = True\n"
     local_parallel_code += "        if number_of_procs >= testcase_data[key]['procs'] and testcase_data[key]['runnable'] == True:\n"
     local_parallel_code += "          number_of_procs = number_of_procs - testcase_data[key]['procs']\n"
@@ -321,14 +320,14 @@ def write_local_parallel_bottom(local_parallel_code):
     local_parallel_code += "      if not psutil.pid_exists(pid):\n"
     local_parallel_code += "        running.remove(process)\n"
     local_parallel_code += "        print('DONE: {} {} {}'.format(testcase_data[key]['procs'], number_of_procs, running_key))\n"
-    local_parallel_code += "        compleated.append(running_key)\n"
+    local_parallel_code += "        completed.append(running_key)\n"
     local_parallel_code += "        number_of_procs = number_of_procs + testcase_data[running_key]['procs']\n"
     local_parallel_code += "      else:\n"
     local_parallel_code += "        try:\n"
     local_parallel_code += "          process[0].wait(timeout=3)\n"
     local_parallel_code += "        except subprocess.TimeoutExpired:\n"
     local_parallel_code += "          continue\n"
-    local_parallel_code += "    if running == []:\n"
+    local_parallel_code += "    if len(running) == 0:\n"
     local_parallel_code += "      processing_phase = False\n"
     local_parallel_code += "  if not adding_phase and not processing_phase and done:\n"
     local_parallel_code += "    break\n"
@@ -373,7 +372,10 @@ def write_local_parallel_top(work_dir, suite_tag, nodes):
 def write_script_bottom(regression_script_code):
     # {{{
     regression_script_code += "end_time = time.time()\n"
-    regression_script_code += "print('runtime: {}'.format(end_time - start_time))\n"
+    regression_script_code += "runtime = end_time - start_time\n"
+    regression_script_code += "mins = int(np.floor(runtime/60.0))\n"
+    regression_script_code += "secs = int(np.ceil(runtime - mins*60))\n"
+    regression_script_code += "print('Wall clock time: {:02d}:{:02d}'.format(mins, secs))\n"
     regression_script_code += "print('\\n\\n\\nTEST RUNTIMES & ERROR:')\n"
     regression_script_code += "case_output = '/case_outputs/'\n"
     regression_script_code += "totaltime = 0\n"
@@ -402,7 +404,7 @@ def write_script_bottom(regression_script_code):
     # }}}
 
 
-def write_script_top(work_dir, nodes):
+def write_script_top(work_dir):
     # {{{
     regression_script_code = ""
     regression_script_code += '#!/usr/bin/env python\n'
@@ -417,13 +419,13 @@ def write_script_top(work_dir, nodes):
     regression_script_code += 'import numpy as np\n'
     regression_script_code += 'import time'
     regression_script_code += '\n\n'
+    regression_script_code += 'start_time = time.time()'
     regression_script_code += "os.environ['PYTHONUNBUFFERED'] = '1'\n"
     regression_script_code += "test_failed = False\n"
     regression_script_code += '\n'
     regression_script_code += "if not os.path.exists('case_outputs'):\n"
     regression_script_code += "    os.makedirs('case_outputs')\n"
     regression_script_code += '\n'
-    regression_script_code += 'start_time = time.time()'
     regression_script_code += "base_path = '{}'\n".format(work_dir)
 
     return regression_script_code
@@ -447,13 +449,14 @@ def setup_suite(suite_tag, work_dir, model_runtime, config_file, baseline_dir,
         # flush existing regression suite output file
         open(work_dir + '/manage_regression_suite.py.out', 'w').close()
 
-
+    # writes the middle section of the code
     if isparallel:
         local_code = write_local_parallel_data(
             local_code, work_dir, testcase_data)
                     
         local_code = write_local_parallel_bottom(
             local_code)
+    # sets up each testcase, if not parallel returns the nonparallel code section
     for child in suite_tag:
         # Process <test> tags within the test suite
         if child.tag == 'test':
@@ -467,6 +470,7 @@ def setup_suite(suite_tag, work_dir, model_runtime, config_file, baseline_dir,
                 verbose, 
                 isparallel)
 
+    # writes the bottom section
     local_code = write_script_bottom(local_code)
 
     return local_code
@@ -501,6 +505,7 @@ def get_test_case_procs(suite_tag, testcase_data, testcase_data_prereq):
     for child in suite_tag:
         for script in child:
             run_scripts.append(script.attrib['name'])
+    print(run_scripts)
     for child in suite_tag:
         if child.tag == 'test':
             try:
