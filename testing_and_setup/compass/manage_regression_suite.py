@@ -230,7 +230,7 @@ def local_setup_script(
         script_name = '{}/{}.py'.format(work_dir, suite_name)
         local_script = open('{}'.format(script_name), 'w')
         local_code = write_script_top(
-            work_dir, suite_tag, nodes)
+            work_dir, nodes)
 
 
     dev_null = open('/dev/null', 'a')
@@ -402,7 +402,7 @@ def write_script_bottom(regression_script_code):
     # }}}
 
 
-def write_script_top(work_dir):
+def write_script_top(work_dir, nodes):
     # {{{
     regression_script_code = ""
     regression_script_code += '#!/usr/bin/env python\n'
@@ -415,13 +415,15 @@ def write_script_top(work_dir):
     regression_script_code += 'import os\n'
     regression_script_code += 'import subprocess\n'
     regression_script_code += 'import numpy as np\n'
-    regression_script_code += '\n'
+    regression_script_code += 'import time'
+    regression_script_code += '\n\n'
     regression_script_code += "os.environ['PYTHONUNBUFFERED'] = '1'\n"
     regression_script_code += "test_failed = False\n"
     regression_script_code += '\n'
     regression_script_code += "if not os.path.exists('case_outputs'):\n"
     regression_script_code += "    os.makedirs('case_outputs')\n"
     regression_script_code += '\n'
+    regression_script_code += 'start_time = time.time()'
     regression_script_code += "base_path = '{}'\n".format(work_dir)
 
     return regression_script_code
@@ -499,7 +501,6 @@ def get_test_case_procs(suite_tag, testcase_data, testcase_data_prereq):
     for child in suite_tag:
         for script in child:
             run_scripts.append(script.attrib['name'])
-    print(run_scripts)
     for child in suite_tag:
         if child.tag == 'test':
             try:
