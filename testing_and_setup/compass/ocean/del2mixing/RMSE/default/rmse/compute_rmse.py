@@ -1,0 +1,1 @@
+/turquoise/usr/projects/climate/jamilg/MPAS-Model/testing_and_setup/compass/ocean/del2mixing/RMSE/default/compute_rmse.py
