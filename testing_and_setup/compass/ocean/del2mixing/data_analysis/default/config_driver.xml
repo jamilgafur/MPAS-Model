@@ -1,0 +1,8 @@
+<driver_script name="run.py">
+  <prerequisite core="ocean" configuration="ha_test" resolution="25km" test="default"/>
+  <prerequisite core="ocean" configuration="ha_test" resolution="10km" test="default"/>
+  <prerequisite core="ocean" configuration="ha_test" resolution="5km"  test="default"/>
+  <case name="RMSE">
+    <step executable="./run.py" quiet="true" pre_message=" * Computing RMSE and convergence order..." post_message="     complete!  Created file:  rmse/convergence.png"/>
+  </case>
+</driver_script>
